@@ -44,13 +44,13 @@ getDwollaToken = () => {
     })
 }
 
-generateCustomerUrl = (requestBody, processorTokenRequest) => {
+generateCustomerUrl = (requestBody) => {
 
     // Create a customer on dwolla 
 
     let customer = {};
 
-    console.log("request body : ", requestBody, "processorToken : ", processorTokenRequest);
+    console.log("request body : ", requestBody);
 
     return new Promise((resolve, reject) => {
         getDwollaToken()
@@ -62,21 +62,23 @@ generateCustomerUrl = (requestBody, processorTokenRequest) => {
         })
         .then((customerUrl) => {
             customer.customerUrl = customerUrl;
+            resolve(customer);
         })
-        .then(() => {
-            plaidClient.createProcessorToken(processorTokenRequest.accessToken, processorTokenRequest.account_id,'dwolla', function(err, res){
-                console.log(res);
-                customer.processorToken = res.processor_token;
-                resolve(customer);
-                })
-            });
+        // .then(() => {
+            // plaidClient.createProcessorToken(processorTokenRequest.accessToken, processorTokenRequest.account_id,'dwolla', function(err, res){
+            //     console.log(res);
+            //     customer.processorToken = res.processor_token;
+            //     resolve(customer);
+            //     })
+            // });
 
-        })
+        // })
         .catch((error) => {
             console.log("error :  generateCustomerUrl :: ", error);
             reject(error);
+            })
         })
-    })
+    });
 }
 
 generateCustomerFundingSource = (customer) => {
@@ -86,8 +88,10 @@ generateCustomerFundingSource = (customer) => {
     return new Promise((resolve, reject) => {
 
         let fundingRequestBody = {
-            'plaidToken' : customer.processorToken,
-            'name'       : "swapnil"
+            'routingNumber'     : '222222226',
+            'accountNumber'     : '123456789',
+            'bankAccountType'   : 'checking',
+            'name'              : 'swapnil'
         };
 
         let fundingSourceUrl;
@@ -162,33 +166,23 @@ app.get("/", (req, res, next) => {
 
 app.post("/exchange_token", (req, res) => {
 
-    let params = {
-        public_token : req.body.public_token,
-        account_id : req.body.account_id
-    };
-
-    let customer = {};
-
-    plaidClient.exchangePublicToken(params.public_token)
-    .then((publicTokenResponse) => {
-        
-        let access_token = publicTokenResponse.access_token;
-        
+        let customer = {};
+            
         // create a dwolla customer
 
         let requestBody = {
             firstName   : "swapnil",
             lastName    : "kulkarni",
-            email       : "test7@gmail.com",
+            email       : "test12@gmail.com",
             type        : "receive-only"
         };  
 
-        let processorTokenRequest = {
-            accessToken : publicTokenResponse.access_token,
-            account_id  : params.account_id
-        };
+        // let processorTokenRequest = {
+        //     accessToken : publicTokenResponse.access_token,
+        //     account_id  : params.account_id
+        // };
         
-        generateCustomerUrl(requestBody,processorTokenRequest)
+        generateCustomerUrl(requestBody)
         .then((customer) => {
             return generateCustomerFundingSource(customer);
         })
@@ -197,17 +191,11 @@ app.post("/exchange_token", (req, res) => {
         })
         .then((response) => {
             console.log("final response : ", response);
+            res.status(200).send(response);
         })
         .catch((error) => {
             console.log("Error in completing transaction : error :: ", error);
         })
-        
-    })
-    .catch((error) => { 
-        console.log(error);
-        let result = handlePaymentError(error);
-        console.log("error result : ",result)
-    })
 })
 
 app.get("/sources", (req, res) => {
@@ -224,11 +212,6 @@ app.get("/sources", (req, res) => {
         let errorResult = handlePaymentError(error);
         res.status(error.status_code).send(errorResult);
     })
-})
-
-app.post("/makeTransfer", (req,res) => {
-
-
 })
 
 handlePaymentError = function(error) {
