@@ -35,9 +35,7 @@ getDwollaToken = () => {
         dwollaClient.auth.client()
         .then(function(token) {
             appToken = token;
-            // console.log(appToken);
             resolve(appToken);
-    // return token.get('/');
         })
         .catch((error) => {
             console.log("getDwollaToken : failed to generate dwolla token ,  error :: ", error);
