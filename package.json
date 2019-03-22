@@ -1,0 +1,25 @@
+{
+  "name": "stripe-plaid_poc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon ./server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "dotenv": "^6.2.0",
+    "dwolla-v2": "^2.0.1",
+    "express": "^4.16.4",
+    "plaid": "^2.10.0",
+    "pug": "^2.0.3",
+    "stripe": "^6.25.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.10"
+  }
+}

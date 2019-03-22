@@ -1,0 +1,63 @@
+<!-- <button id="linkButton">Open Link - Institution Select</button> -->
+<button style = "display : table; margin : 0 auto; top: 20%" type="button" id="linkButton" class="btn btn-primary">Primary</button>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
+<script 
+src="https://cdn.plaid.com/link/v2/stable/link-initialize.js">
+</script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<script>
+var linkHandler = Plaid.create({
+  selectAccount: true,
+  env: 'sandbox',
+  clientName: ' Roo ',
+  key: '40f60d270ae020984987b6bd2fead1',
+  product: ['auth'],
+  onLoad: function() {
+    // The Link module finished loading.
+  },
+  onSuccess: function(public_token, metadata) {
+    // The onSuccess function is called when the user has successfully
+    // authenticated and selected an account to use.
+    //
+    // When called, you will send the public_token and the selected
+    // account ID, metadata.account_id, to your backend app server.
+    //
+    // sendDataToBackendServer({
+    //   public_token: public_token,
+    //   account_id: metadata.account_id
+    // });
+    console.log('Public Token: ' + public_token);
+    console.log('Customer-selected account ID: ' + metadata.account_id);
+
+    let xhr = new XMLHttpRequest();
+
+    let params = {
+      public_token : public_token,
+      account_id   : metadata.account_id
+    };
+    params = JSON.stringify(params);
+
+    xhr.open('POST', 'http://localhost:3000/exchange_token', true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    xhr.send(params);
+
+    
+    
+  },
+  onExit: function(err, metadata) {
+    // The user exited the Link flow.
+    if (err != null) {
+      // The user encountered a Plaid API error prior to exiting.
+    }
+    // metadata contains information about the institution
+    // that the user selected and the most recent API request IDs.
+    // Storing this information can be helpful for support.
+  },
+});
+
+// Trigger the standard Institution Select view
+document.getElementById('linkButton').onclick = function() {
+  linkHandler.open();
+};
+</script>
